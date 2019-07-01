@@ -1,0 +1,71 @@
+{
+    "token": "<your token>",
+    "prefixes": {
+        "text": ["delta."],
+        "allow_mention": true
+    },
+    "presence": {
+        "type": "WATCHING",
+        "name": "you",
+        "url": "https://twitch.tv/discordapp",
+        "status": "dnd"
+    },
+    "server": 123456789098765432,
+    "colours": {
+        "embed": "7289da",
+        "error": "f44444",
+        "ban": "e22d2d",
+        "unban": "0ef178",
+        "mute": "d6a20e",
+        "unmute": "0ef178",
+        "kick": "fc732e"
+    },
+    "figlet": "DisBot",
+    "directories": {
+        "database": "data/database",
+        "cogs": "modules"
+    },
+    "case_insensitive": true,
+    "auto_moderator": {
+        "modules": {
+            "anti_spam": {
+                "enabled": true,
+                "bypassed_channels": [],
+                "threshold_seconds": 5
+            }, 
+            "anti_slur": {
+                "enabled": true,
+                "bypassed_channels": []
+            },
+            "anti_invite": {
+                "enabled": true,
+                "bypass_verified": true,
+                "bypassed_channels": [],
+                "bypassed_invites": []
+            },
+            "anti_nsfw": {
+                "enabled": true,
+                "bypassed_channels": [],
+                "extra_links": []
+            },
+            "anti_link": {
+                "enabled": true,
+                "bypassed_channels": [],
+                "bypassed_links": []
+            }
+        },
+        "enabled": true,
+        "punishment": "mute"
+    },
+    "roles": {
+        "admin": 123456789098765432,
+        "mod": 123456789098765432,
+        "muted": 123456789098765432,
+        "member": 123456789098765432
+    },
+    "channels": {
+        "user_log": 123456789098765432,
+        "mod_log": 123456789098765432,
+        "announcements": 123456789098765432
+    }
+}
