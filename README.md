@@ -1,6 +1,6 @@
 # Delta
 
-Delta was originally made by JackTEK#6669 & Nope#2019 using [discord.py](https://pypi.org/project/discord.py) as a submission for the Discord Hack Week project: [DisBot](https://github.com/disbotdiscord/DisBot/), but was later re-purposed into a fully-fledged open-source bot. and is designed to help manage [Mila Software](https://invite.gg/mila)!
+Delta was originally made by JackTEK#6669 & Nope#2019 using [discord.py](https://pypi.org/project/discord.py) as a submission for the Discord Hack Week project: [DisBot](https://github.com/disbotdiscord/DisBot/), but was later re-purposed into a fully-fledged open-source bot. It is designed to help manage [Mila Software](https://invite.gg/mila)!
 
 ## Setup
 
