@@ -46,6 +46,9 @@ Here's a list of commands that you will find in Delta, you can also use `db.help
 
 > pingmod
 - Picks an on-duty staff member at random and pings them.
+
+> staff
+- Shows a list of staff members.
 ```
 
 - Moderator
