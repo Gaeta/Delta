@@ -30,7 +30,7 @@ class BasicEvents(commands.Cog):
         await self.bot.change_presence(activity=display.activity, status=display.status)
 
         with sqlite3.connect(self.bot.config.database) as db:
-            for table, columns in (("Settings", "Case_ID TEXT"), ("Cases", "Mod_ID TEXT, User_ID TEXT, Case_ID TEXT, Msg_ID TEXT, Punishment TEXT, Reason TEXT"), ("Mute_Evaders", "User_ID TEXT")):
+            for table, columns in (("Settings", "Case_ID TEXT"), ("Cases", "Mod_ID TEXT, User_ID TEXT, Case_ID TEXT, Msg_ID TEXT, Punishment TEXT, Reason TEXT"), ("Mute_Evaders", "User_ID TEXT"), ("Duty", "User_ID TEXT, Admin TEXT, Mod TEXT, Staff TEXT, Support TEXT")):
                 db.cursor().execute(f"CREATE TABLE IF NOT EXISTS {table} ({columns})")
             
             if db.cursor().execute("SELECT * FROM Settings").fetchone() is None:
@@ -139,6 +139,9 @@ class ModEvents(commands.Cog):
             if re.search(LINK_REGEX, m.content, re.IGNORECASE):
                 module = utils.auto_mod(self.bot, "link")
 
+                if module is False:
+                    return
+
                 if not module.enabled or m.channel.id in module.bypassed_channels:
                     return
 
@@ -162,6 +165,9 @@ class ModEvents(commands.Cog):
             if re.search(SLUR_REGEX, m.content, re.IGNORECASE):
                 module = utils.auto_mod(self.bot, "slur")
 
+                if module is False:
+                    return
+
                 if not module.enabled or m.channel.id in module.bypassed_channels:
                     return
 
@@ -171,6 +177,9 @@ class ModEvents(commands.Cog):
 
             if re.search(INVITE_REGEX, m.content, re.IGNORECASE):
                 module = utils.auto_mod(self.bot, "invite")
+
+                if module is False:
+                    return
 
                 if not module.enabled or m.channel.id in module.bypassed_channels:
                     return
@@ -197,10 +206,14 @@ class ModEvents(commands.Cog):
                 return await m.delete()
 
             module = utils.auto_mod(self.bot, "nsfw")
-            if re.search(NSFW_REGEX, m.content, re.IGNORECASE) or len([link for link in module.extra_links if link.lower() in m.content.lower()]) > 0:
-                if not module.enabled or m.channel.id in module.bypassed_channels:
-                    return
+            
+            if module is False:
+                return
 
+            if not module.enabled or m.channel.id in module.bypassed_channels:
+                return
+
+            if re.search(NSFW_REGEX, m.content, re.IGNORECASE) or len([link for link in module.extra_links if link.lower() in m.content.lower()]) > 0:
                 await utils.auto_punish(self, m.author, m.channel, "NSFW detected")
 
                 return await m.delete()
@@ -224,10 +237,14 @@ class ModEvents(commands.Cog):
                 return m.author == message.author and m.channel == message.channel
             
             module = utils.auto_mod(self.bot, "spam")
-            timeout = module.threshold_seconds
+
+            if module is False:
+                return
 
             if not module.enabled or message.channel.id in module.bypassed_channels or f"{message.author.id}:{message.channel.id}" in self.spam_ignore:
                 return
+
+            timeout = module.threshold_seconds
 
             try:
                 self.spam_ignore.add(f"{message.author.id}:{message.channel.id}")

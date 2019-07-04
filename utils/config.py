@@ -1,6 +1,6 @@
 import json, discord, os
 
-from .namedtuples import Presence, AutoMod, Roles, Channels, Colours, Prefix
+from .namedtuples import Presence, AutoMod, Roles, Channels, Colours, Emojis
 from .exceptions import InvalidConfig
 
 class Config:
@@ -9,9 +9,7 @@ class Config:
 
     @property
     def prefix(self):
-        prefixes = self.config["prefix"]
-
-        return Prefix(bool(prefixes["allow_mention"]), prefixes["text"])
+        return self.config["prefix"]
 
     @property
     def token(self):
@@ -39,7 +37,7 @@ class Config:
             else:
                 member = int(member)
 
-            return Roles(int(roles["admin"]), int(roles["mod"]), int(roles["muted"]), member)
+            return Roles(int(roles["admin"]), int(roles["mod"]), int(roles["muted"]), member, int(roles["offduty"]), int(roles["staff"]), int(roles["support"]))
         
         except:
             raise InvalidConfig("Roles", "list of int")
@@ -53,6 +51,16 @@ class Config:
         
         except:
             raise InvalidConfig("Channels", "list of int")
+
+    @property
+    def emojis(self):
+        emojis = self.config["emojis"]
+
+        try:
+            return Emojis(int(emojis["online"]), int(emojis["idle"]), int(emojis["dnd"]), int(emojis["offline"]))
+    
+        except:
+            raise InvalidConfig("Emojis", "list of int")
 
     @property
     def colours(self):
@@ -100,6 +108,10 @@ class Config:
     @property
     def database(self):
         return f"{self.directories['database']}.db"
+
+    @property
+    def stderr(self):
+        return f"{self.directories['stderr']}.log"
 
     @property
     def case_insensitive(self):

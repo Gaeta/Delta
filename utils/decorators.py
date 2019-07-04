@@ -16,3 +16,6 @@ def is_admin():
 
 def mod(bot, ctx):
     return ctx.author.guild_permissions.manage_guild or bot.config.roles.mod in (role.id for role in ctx.author.roles) or bot.config.roles.admin in (role.id for role in ctx.author.roles)
+
+def staff(ctx):
+    return [staff for staff in ctx.guild.members if not staff.bot and (staff.guild_permissions.manage_guild or ctx.bot.config.roles.mod in (role.id for role in staff.roles) or ctx.bot.config.roles.admin in (role.id for role in staff.roles) or ctx.bot.config.roles.staff in (role.id for role in staff.roles))]

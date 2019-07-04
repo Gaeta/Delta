@@ -65,7 +65,7 @@ class AdministratorCommands(commands.Cog):
         try:
             await channel.send(announcement)
 
-            await utils.embed(ctx, discord.Embed(title="Announcement Sent", description=f"Your announcement was successfully posted in <#{channel.mention}>."), error=True)
+            await utils.embed(ctx, discord.Embed(title="Announcement Sent", description=f"Your announcement was successfully posted in {channel.mention}."), error=True)
 
         except:
             if channel.permissions_for(ctx.guild.me).send_messages is False:

@@ -5,14 +5,14 @@ from collections import namedtuple
 # Bot presence
 Presence = namedtuple("Presence", "activity, status")
 
-# Prefix settings
-Prefix = namedtuple("Prefix", "allow_mention, prefixes")
-
 # Configured colours
 Colours = namedtuple("Colours", "embed, error, ban, unban, mute, unmute, kick")
 
 # Configured roles
-Roles = namedtuple("Roles", "admin, mod, muted, member")
+Roles = namedtuple("Roles", "admin, mod, muted, member, off_duty, staff, support")
+
+# Configured emojis
+Emojis = namedtuple("Emojis", "online, idle, dnd, offline")
 
 # Configured channels
 Channels = namedtuple("Channels", "user_log, mod_log, announcements")

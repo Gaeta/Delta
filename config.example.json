@@ -1,18 +1,15 @@
 {
     "token": "<your token>",
-    "prefixes": {
-        "text": ["delta."],
-        "allow_mention": true
-    },
+    "prefix": "delta.",
     "presence": {
-        "type": "WATCHING",
-        "name": "you",
-        "url": "https://twitch.tv/discordapp",
+        "type": "LISTENING",
+        "name": "your conversations",
+        "url": "",
         "status": "dnd"
     },
     "server": 123456789098765432,
     "colours": {
-        "embed": "7289da",
+        "embed": "f44444",
         "error": "f44444",
         "ban": "e22d2d",
         "unban": "0ef178",
@@ -20,36 +17,51 @@
         "unmute": "0ef178",
         "kick": "fc732e"
     },
-    "figlet": "DisBot",
+    "emojis": {
+        "online": 123456789098765432,
+        "idle": 123456789098765432,
+        "dnd": 123456789098765432,
+        "offline": 123456789098765432
+    },
+    "figlet": "Project Delta",
     "directories": {
         "database": "data/database",
-        "cogs": "modules"
+        "cogs": "modules",
+        "stderr": "data/errors"
     },
     "case_insensitive": true,
     "auto_moderator": {
         "modules": {
             "anti_spam": {
                 "enabled": true,
-                "bypassed_channels": [],
-                "threshold_seconds": 5
+                "bypassed_channels": [
+                    123456789098765432
+                ],
+                "threshold_seconds": 3
             }, 
             "anti_slur": {
                 "enabled": true,
-                "bypassed_channels": []
+                "bypassed_channels": [
+                    123456789098765432
+                ]
             },
             "anti_invite": {
                 "enabled": true,
                 "bypass_verified": true,
-                "bypassed_channels": [],
+                "bypassed_channels": [
+                    123456789098765432
+                ],
                 "bypassed_invites": []
             },
             "anti_nsfw": {
                 "enabled": true,
-                "bypassed_channels": [],
-                "extra_links": []
+                "bypassed_channels": [
+                    123456789098765432
+                ],
+                "extra_links": ["nsfw.com"]
             },
             "anti_link": {
-                "enabled": true,
+                "enabled": false,
                 "bypassed_channels": [],
                 "bypassed_links": []
             }
@@ -60,8 +72,11 @@
     "roles": {
         "admin": 123456789098765432,
         "mod": 123456789098765432,
+        "support": 123456789098765432,
+        "staff": 123456789098765432,
         "muted": 123456789098765432,
-        "member": 123456789098765432
+        "member": "@everyone",
+        "offduty": 123456789098765432
     },
     "channels": {
         "user_log": 123456789098765432,

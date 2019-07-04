@@ -1,13 +1,74 @@
 import discord, utils, re, asyncio, sqlite3
 
 from discord.ext import commands
-from datetime import datetime
+from datetime import datetime, timedelta
+from .administrator import TimeConverter
 
 class ModeratorCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
         self.bot.log_interceptors = set()
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.bot_has_permissions(manage_roles=True)
+    async def duty(self, ctx):
+        """Toggles your duty status."""
+
+        mod_role = ctx.guild.get_role(ctx.bot.config.roles.mod)
+        admin_role = ctx.guild.get_role(ctx.bot.config.roles.admin)
+        off_duty_role = ctx.guild.get_role(ctx.bot.config.roles.off_duty)
+        staff_role = ctx.guild.get_role(ctx.bot.config.roles.staff)
+        support_role = ctx.guild.get_role(ctx.bot.config.roles.support)
+
+        mod = mod_role in ctx.author.roles
+        admin = admin_role in ctx.author.roles
+        off_duty = off_duty_role in ctx.author.roles
+        staff = staff_role in ctx.author.roles
+        support = support_role in ctx.author.roles
+
+        if not admin and not mod and not off_duty and not staff and not support:
+            return await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Duty Status Failed", description="Sorry, only Moderators, Administrators or Off-Duty staff can use that command."), error=True)
+
+        if admin or mod or staff or support:
+            await ctx.author.remove_roles(admin_role, mod_role, staff_role, support_role)
+
+            await ctx.author.add_roles(off_duty_role)
+
+            with sqlite3.connect(self.bot.config.database) as db:
+                duty = db.cursor().execute("SELECT * FROM Duty WHERE User_ID=?", (ctx.author.id,)).fetchone()
+
+                if duty is None:
+                    db.cursor().execute("INSERT INTO Duty VALUES (?, ?, ?, ?, ?)", (ctx.author.id, admin, mod, staff, support))
+
+                else:
+                    db.cursor().execute("UPDATE Duty SET Admin=? WHERE User_ID=?", (admin, ctx.author.id))
+                    db.cursor().execute("UPDATE Duty SET Mod=? WHERE User_ID=?", (mod, ctx.author.id))
+                    db.cursor().execute("UPDATE Duty SET Staff=? WHERE User_ID=?", (staff, ctx.author.id))
+                    db.cursor().execute("UPDATE Duty SET Support=? WHERE User_ID=?", (support, ctx.author.id))
+                    
+                db.commit()
+
+            return await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Duty Status Updated", description=f"You have successfully marked yourself as **Off-Duty**. To regain your powers, run `{self.bot.config.prefix}duty` again."))
+
+        with sqlite3.connect(self.bot.config.database) as db:
+            admin, mod, staff, support = db.cursor().execute("SELECT Admin, Mod, Staff, Support FROM Duty WHERE User_ID=?", (ctx.author.id,)).fetchone()
+
+            if int(admin) == 1:
+                await ctx.author.add_roles(admin_role)
+
+            if int(mod) == 1:
+                await ctx.author.add_roles(mod_role)
+            
+            if int(staff) == 1:
+                await ctx.author.add_roles(staff_role)
+
+            if int(support) == 1:
+                await ctx.author.add_roles(support_role)
+
+            await ctx.author.remove_roles(off_duty_role)
+            await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Duty Status Updated", description=f"You have successfully marked yourself as **On-Duty**. To remove your powers, run `{self.bot.config.prefix}duty` again."))
 
     @commands.command()
     @commands.guild_only()
@@ -30,7 +91,6 @@ class ModeratorCommands(commands.Cog):
             return await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Lookup Failed", description=f"Sorry, I could not find a case with the ID {case_id}."), error=True)
 
         send = await utils.embed(ctx, discord.Embed(colour=utils.case_colour(self.bot, case.punishment), timestamp=datetime.utcnow(), title=f"{case.punishment.title()} | Case #{case_id}").add_field(name="User" if not case.user.bot else "Bot", value=f"{case.user} ({case.user.mention})").add_field(name="Moderator", value=case.mod if hasattr(case.mod, "id") else f"??? (Moderator: do `{ctx.bot.config.prefix}reason {case_id}`)").add_field(name="Reason", value=case.reason if case.reason else f"Moderator: please do `{ctx.bot.config.prefix}reason {case_id} <reason>`", inline=False).set_footer(text=f"ID: {case.user.id}"), override_colour=True)
-        await ctx.send(embed=send)
 
     @commands.command()
     @commands.guild_only()
@@ -50,8 +110,31 @@ class ModeratorCommands(commands.Cog):
 
         await ctx.message.delete()
 
+        timeout = reason.split(" | ")
         send = await utils.embed(ctx, discord.Embed(colour=utils.case_colour(self.bot, case.punishment), timestamp=case.message.created_at, title=f"{case.punishment.title()} | Case #{case_id}").add_field(name="User" if not case.user.bot else "Bot", value=f"{case.user} ({case.user.mention})").add_field(name="Moderator", value=ctx.author if not hasattr(case.mod, "id") else case.mod).add_field(name="Reason", value=reason, inline=False).set_footer(text=f"ID: {case.user.id}"), override_colour=True, send=False)
+
+        if len(timeout) > 1 and case.punishment.lower() in ("mute", "ban"):
+            total_seconds = await TimeConverter().convert(timeout[-1])
+
+            if total_seconds > 0:
+                now = datetime.utcnow()
+
+                hours, remainder = divmod(total_seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                days, hours = divmod(hours, 24)
+
+                unpunish_at = now + timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+                timestamp = unpunish_at.strftime(f"{'Today' if now.day == unpunish_at.day else '%d/%m/%y'} at %I:%M %p")
+                descriptor = {"mute": "Unmute", "ban": "Unban"}[case.punishment.lower()]
+            
+                send.set_footer(text=f"{descriptor} at: {timestamp} UTC | ID: {case.user.id}")
+        
         await case.message.edit(embed=send, content=None)
+
+        with sqlite3.connect(self.bot.config.database) as db:
+            db.cursor().execute("UPDATE Cases SET Reason=? WHERE Case_ID=?", (reason, case_id))
+            db.cursor().execute("UPDATE Cases SET Mod_ID=? WHERE Case_ID=?", (ctx.author.id, case_id))
+            db.commit()
 
     @commands.command(aliases=["prune", "nuke"])
     @commands.guild_only()
