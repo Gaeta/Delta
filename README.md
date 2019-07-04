@@ -23,7 +23,9 @@ Here's a list of every feature you can expect to see in Delta:
 + Clean and optimised code 
 + Easy-to-setup automatic moderator 
 + Automatic user join/leave & punishment logging 
-+ Mods logs have an editable reason and can be fetched via a command 
++ Mods logs have an editable reason and can be fetched via a command
++ On/Off Duty system designed to reduce the amount of DMs and pings that staff get
++ Pingmod command that pings a random, on-duty mod that is neither idle nor offline
 
 ### Commands
 
@@ -31,56 +33,62 @@ Here's a list of commands that you will find in Delta, you can also use `db.help
 - Basic
 ```python
 > case
-- Gets information on a case
+- Gets information on a case.
 
 > devs
-- Lists the original developers
+- Lists the original developers.
 
 > help
-- Shows the help list
+- Shows the help list.
 
 > ping 
-- Shows connection latency
+- Shows connection latency.
+
+> pingmod
+- Picks an on-duty staff member at random and pings them.
 ```
 
 - Moderator
 ```python
 > ban
-- Bans up to 5 users
+- Bans up to 5 users.
 
 > bans
-- Lists up to 20 bans
+- Lists up to 20 bans.
+
+> duty
+- Togggles your duty status.
 
 > hackban
-- Bans up to 5 users via IDs
+- Bans up to 5 users via IDs.
 
 > kick
-- Kicks up to 5 users
+- Kicks up to 5 users.
 
 > mute
-- Mutes up to 5 users
+- Mutes up to 5 users.
 
 > purge
-- Deletes up to 200 messages
+- Deletes up to 200 messages.
 
 > unban
-- Unbans up to 5 users via IDs
+- Unbans up to 5 users via IDs.
 
 > unmute
-- Unmutes up to 5 users
+- Unmutes up to 5 users.
 ```
 
 - Administrator
 ```python
 > announce
-- Creates an announcement message
+- Creates an announcement message.
 
 > lockdown
-- Starts/lifts a channel lockdown
+- Starts/lifts a channel lockdown.
 
 > reload
-- Reloads the config.json file
+- Reloads the config.json file.
 
 > resetid
-- Wipes all of the mod-log data
+- Wipes all of the mod-log data.
 ```
