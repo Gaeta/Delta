@@ -14,8 +14,11 @@ def is_admin():
 
     return commands.check(admin_predicate)
 
-def mod(bot, ctx):
-    return ctx.author.guild_permissions.manage_guild or bot.config.roles.mod in (role.id for role in ctx.author.roles) or bot.config.roles.admin in (role.id for role in ctx.author.roles)
+def guild_only():
+    async def guild_predicate(ctx):
+        if ctx.guild is None:
+            return False
 
-def staff(ctx):
-    return [staff for staff in ctx.guild.members if not staff.bot and (staff.guild_permissions.manage_guild or ctx.bot.config.roles.mod in (role.id for role in staff.roles) or ctx.bot.config.roles.admin in (role.id for role in staff.roles) or ctx.bot.config.roles.staff in (role.id for role in staff.roles))]
+        return ctx.guild.id == ctx.bot.config.server
+
+    return commands.check(guild_predicate)

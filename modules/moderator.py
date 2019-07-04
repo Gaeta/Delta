@@ -11,7 +11,7 @@ class ModeratorCommands(commands.Cog):
         self.bot.log_interceptors = set()
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
     async def duty(self, ctx):
         """Toggles your duty status."""
@@ -71,7 +71,7 @@ class ModeratorCommands(commands.Cog):
             await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Duty Status Updated", description=f"You have successfully marked yourself as **On-Duty**. To remove your powers, run `{self.bot.config.prefix}duty` again."))
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(ban_members=True)
     @utils.is_mod()
     async def bans(self, ctx):
@@ -81,7 +81,7 @@ class ModeratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(title=f"Server Banlist ({len(bans)})", description="\n".join([str(ban.user) for ban in bans[:20]]) if len(bans) > 0 else "*No one has been banned yet...*").set_footer(text="No more than 20 bans are shown here."))
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     async def case(self, ctx, case_id):
         """Shows info on a case."""
 
@@ -93,7 +93,7 @@ class ModeratorCommands(commands.Cog):
         send = await utils.embed(ctx, discord.Embed(colour=utils.case_colour(self.bot, case.punishment), timestamp=datetime.utcnow(), title=f"{case.punishment.title()} | Case #{case_id}").add_field(name="User" if not case.user.bot else "Bot", value=f"{case.user} ({case.user.mention})").add_field(name="Moderator", value=case.mod if hasattr(case.mod, "id") else f"??? (Moderator: do `{ctx.bot.config.prefix}reason {case_id}`)").add_field(name="Reason", value=case.reason if case.reason else f"Moderator: please do `{ctx.bot.config.prefix}reason {case_id} <reason>`", inline=False).set_footer(text=f"ID: {case.user.id}"), override_colour=True)
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @utils.is_mod()
     async def reason(self, ctx, case_id, *, reason):
         """Edits the reason on a mod case."""
@@ -137,7 +137,7 @@ class ModeratorCommands(commands.Cog):
             db.commit()
 
     @commands.command(aliases=["prune", "nuke"])
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(manage_messages=True)
     @utils.is_mod()
     async def purge(self, ctx, limit, users: commands.Greedy[discord.Member]):
@@ -160,7 +160,7 @@ class ModeratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(title="Purge Successful", description=f"**{len(purged)}/{limit}** messages were successfully purged by **{ctx.author}**."), delete_after=5)
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
     @utils.is_mod()
     async def mute(self, ctx, users: commands.Greedy[discord.Member], *, reason="No reason provided."):
@@ -186,7 +186,7 @@ class ModeratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Punishment Executed", description=(f"{', '.join(f'**{str(user)}**' for user in successful_mutes)} {'were' if len(successful_mutes) > 1 else 'was'} successfully **muted** because:\n\n{reason}" if len(successful_mutes) > 0 else "") + (f"\n\nI could not **mute** {', '.join(f'**{str(user)}**' for user in failed_mutes)}. Please ensure the following:\n• The users don't have a higher or equal role to you.\n• You are not trying to mute me.\n• The user isn't already muted." if len(failed_mutes) > 0 else "")))
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
     @utils.is_mod()
     async def unmute(self, ctx, users: commands.Greedy[discord.Member], *, reason="No reason provided."):
@@ -212,7 +212,7 @@ class ModeratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Punishment Executed", description=(f"{', '.join(f'**{str(user)}**' for user in successful_unmutes)} {'were' if len(successful_unmutes) > 1 else 'was'} successfully **unmuted** because:\n\n{reason}" if len(successful_unmutes) > 0 else "") + (f"\n\nI could not **unmute** {', '.join(f'**{str(user)}**' for user in failed_unmutes)}. Please ensure the following:\n• The users don't have a higher or equal role to you.\n• You are not trying to unmute me.\n• The user is already muted." if len(failed_unmutes) > 0 else "")))
 
     @commands.command(aliases=["idban"])
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(ban_members=True)
     @utils.is_mod()
     async def hackban(self, ctx, users: commands.Greedy[int], *, reason="No reason provided."):
@@ -248,7 +248,7 @@ class ModeratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Punishment Executed", description=(f"{', '.join(f'**{str(user)}**' for user in successful_bans)} {'were' if len(successful_bans) > 1 else 'was'} successfully **banned** because:\n\n{reason}" if len(successful_bans) > 0 else "") + (f"\n\nI could not **ban** {', '.join(f'**{str(user)}**' for user in failed_bans)}. Please ensure the following:\n• The users are not in the server, use `{ctx.bot.config.prefix}ban` for that.\n• The users are not already banned.\n• The provided IDs match a user." if len(failed_bans) > 0 else "")))
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(ban_members=True)
     @utils.is_mod()
     async def ban(self, ctx, users: commands.Greedy[discord.Member], *, reason="No reason provided."):
@@ -273,7 +273,7 @@ class ModeratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Punishment Executed", description=(f"{', '.join(f'**{str(user)}**' for user in successful_bans)} {'were' if len(successful_bans) > 1 else 'was'} successfully **banned** because:\n\n{reason}" if len(successful_bans) > 0 else "") + (f"\n\nI could not **ban** {', '.join(f'**{str(user)}**' for user in failed_bans)}. Please ensure the following:\n• The users don't have a higher or equal role to you.\n• You are not trying to ban me." if len(failed_bans) > 0 else "")))
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(ban_members=True)
     @utils.is_mod()
     async def unban(self, ctx, users: commands.Greedy[int], *, reason="No reason provided."):
@@ -309,7 +309,7 @@ class ModeratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Punishment Executed", description=(f"{', '.join(f'**{str(user)}**' for user in successful_unbans)} {'were' if len(successful_unbans) > 1 else 'was'} successfully **unbanned** because:\n\n{reason}" if len(successful_unbans) > 0 else "") + (f"\n\nI could not **unban** {', '.join(f'**{str(user)}**' for user in failed_unbans)}. Please ensure the following:\n• The users are already banned.\n• The provided IDs match a user." if len(failed_unbans) > 0 else "")))
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(kick_members=True)
     @utils.is_mod()
     async def kick(self, ctx, users: commands.Greedy[discord.Member], *, reason="No reason provided."):

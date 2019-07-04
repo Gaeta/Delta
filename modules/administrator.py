@@ -54,7 +54,7 @@ class AdministratorCommands(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @utils.is_admin()
     async def announce(self, ctx, *, announcement):
         """Creates an announcement."""
@@ -74,7 +74,7 @@ class AdministratorCommands(commands.Cog):
             await utils.embed(ctx, discord.Embed(title="Announcement Failed", description=issue), error=True)
 
     @commands.command(aliases=["resetcase"])
-    @commands.guild_only()
+    @utils.guild_only()
     @utils.is_admin()
     async def resetid(self, ctx):
         """Resets the case ID."""
@@ -87,7 +87,7 @@ class AdministratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Data Wiped", description="All case data has been successfully cleared."))
 
     @commands.command(aliases=["reloadconfig"])
-    @commands.guild_only()
+    @utils.guild_only()
     @utils.is_admin()
     async def reload(self, ctx):
         """Reloads the config file."""
@@ -99,7 +99,7 @@ class AdministratorCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Config Reloaded", description="All config data has been successfully reloaded."))
 
     @commands.command()
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.bot_has_permissions(manage_channels=True)
     @utils.is_admin()
     async def lockdown(self, ctx, *, time=None):

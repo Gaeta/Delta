@@ -43,8 +43,26 @@ class BasicEvents(commands.Cog):
         if isinstance(error, commands.CommandNotFound):
             return
 
-        if isinstance(error, commands.NoPrivateMessage):
-            return await utils.embed(ctx, discord.Embed(title="Unusable Command", description=f"Sorry, the command `{ctx.bot.config.prefix}{ctx.command.name}` cannot be used within Direct Messages."), error=True)
+        if isinstance(error, commands.CommandOnCooldown):
+            hours, remainder = divmod(error.retry_after, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            days, hours = divmod(hours, 24)
+
+            text = []
+            
+            if days > 0:
+                text.append(f"{days} days")
+
+            if hours > 0:
+                text.append(f"{hours} hours")
+
+            if minutes > 0:
+                text.append(f"{minutes} minutes")
+
+            if seconds > 0:
+                text.append(f"{seconds} seconds")
+
+            return await utils.embed(ctx, discord.Embed(title="Cooldown Active", description=f"Sorry, the command `{ctx.bot.config.prefix}{ctx.command.name}` is on cooldown. Try again in {', '.join(text)}"), error=True)
 
         if isinstance(error, commands.MissingRequiredArgument):
             return await utils.embed(ctx, discord.Embed(title="Missing Arguments", description=f"Sorry, it seems you haven't provided the `{error.param}` argument. Please check the usage instructions via `{ctx.bot.config.prefix}help {ctx.command.name}` and try again."), error=True)
@@ -56,6 +74,15 @@ class BasicEvents(commands.Cog):
             return await utils.embed(ctx, discord.Embed(title="Missing Permission", description=f"Sorry, it seems I am missing the {', '.join(f'**{self.perm_cleanup(perm)}**' for perm in error.missing_perms)} {'permissions' if len(error.missing_perms) > 1 else 'permission'}."), error=True)
 
         if isinstance(error, commands.CheckFailure):
+            if "guild_predicate" in [check.__name__ for check in ctx.command.checks]:
+                server = self.bot.get_guild(self.bot.config.server)
+
+                if ctx.guild is None:
+                    return await utils.embed(ctx, discord.Embed(title="Server Only", description=f"Sorry, that command may only be used in **{server}**."), error=True)
+
+                if ctx.guild.id != server.id:
+                    return await utils.embed(ctx, discord.Embed(title="Server Only", description=f"Sorry, that command may only be used in **{server}**."), error=True)
+
             if "mod_predicate" in [check.__name__ for check in ctx.command.checks]:
                 server = self.bot.get_guild(self.bot.config.server)
                 role = server.get_role(self.bot.config.roles.mod)

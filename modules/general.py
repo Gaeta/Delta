@@ -48,7 +48,7 @@ class GeneralCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(title="Delta Developers", description="Here are the people who made Delta:\n%s" % "\n".join(f"• **{self.bot.get_user(dev)}**" for dev in (269758783557730314, 263396882762563584))))
 
     @commands.command(aliases=["mods", "admins"])
-    @commands.guild_only()
+    @utils.guild_only()
     async def staff(self, ctx):
         """Shows a detailed list of the server's staff."""
 
@@ -73,7 +73,7 @@ class GeneralCommands(commands.Cog):
         await utils.embed(ctx, discord.Embed(title=f"{ctx.guild} Staff", description=f"Below is a list of every Moderator & Administrator in **{ctx.guild}**:\n\n{display}"))
 
     @commands.command(aliases=["pingadmin", "pingmod"])
-    @commands.guild_only()
+    @utils.guild_only()
     @commands.cooldown(1, 60 * 5, commands.BucketType.member)
     async def pingstaff(self, ctx, *, message):
         """Picks an on-duty staff member at random and pings them."""
