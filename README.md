@@ -47,6 +47,9 @@ Here's a list of commands that you will find in Delta, you can also use `db.help
 > pingmod
 - Picks an on-duty staff member at random and pings them.
 
+> polls
+- Toggles the poll/announcement ping role.
+
 > staff
 - Shows a list of staff members.
 ```
@@ -88,6 +91,9 @@ Here's a list of commands that you will find in Delta, you can also use `db.help
 
 > lockdown
 - Starts/lifts a channel lockdown.
+
+> poll
+- Creates a poll with up to 5 answers.
 
 > reload
 - Reloads the config.json file.
