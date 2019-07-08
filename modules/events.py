@@ -51,18 +51,18 @@ class BasicEvents(commands.Cog):
             text = []
             
             if days > 0:
-                text.append(f"{days} days")
+                text.append(f"{round(days)} days")
 
             if hours > 0:
-                text.append(f"{hours} hours")
+                text.append(f"{round(hours)} hours")
 
             if minutes > 0:
-                text.append(f"{minutes} minutes")
+                text.append(f"{round(minutes)} minutes")
 
             if seconds > 0:
-                text.append(f"{seconds} seconds")
+                text.append(f"{round(seconds)} seconds")
 
-            return await utils.embed(ctx, discord.Embed(title="Cooldown Active", description=f"Sorry, the command `{ctx.bot.config.prefix}{ctx.command.name}` is on cooldown. Try again in {', '.join(text)}"), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Cooldown Active", description=f"Sorry, the command `{ctx.bot.config.prefix}{ctx.command.name}` is on cooldown. Try again in {', '.join(text)}."), error=True)
 
         if isinstance(error, commands.MissingRequiredArgument):
             return await utils.embed(ctx, discord.Embed(title="Missing Arguments", description=f"Sorry, it seems you haven't provided the `{error.param}` argument. Please check the usage instructions via `{ctx.bot.config.prefix}help {ctx.command.name}` and try again."), error=True)
@@ -117,15 +117,25 @@ class BasicEvents(commands.Cog):
             with sqlite3.connect(self.bot.config.database) as db:
                 evader = db.cursor().execute("SELECT User_ID FROM Mute_Evaders WHERE User_ID=?", (user.id,)).fetchone()
 
-                if evader is None:
-                    return
+                if evader is not None:
+                    self.bot.log_interceptors.add(f"{user.id}:{user.guild.id}:Mute")
+                    await utils.mute(self.bot, user, f"[ Auto Mod ] >> Mute evasion detected.")
+                    await utils.mod_log(self, user, "mute", self.bot.user, f"[ Auto Mod ] >> Mute evasion detected.")
 
-                self.bot.log_interceptors.add(f"{user.id}:{user.guild.id}:Mute")
-                await utils.mute(self.bot, user, f"[ Auto Mod ] >> Mute evasion detected")
-                await utils.mod_log(self, user, "mute", self.bot.user, f"[ Auto Mod ] >> Mute evasion detected")
+                    db.cursor().execute("DELETE FROM Mute_Evaders WHERE User_ID=?", (user.id,))
+                    db.commit()
 
-                db.cursor().execute("DELETE FROM Mute_Evaders WHERE User_ID=?", (user.id,))
-                db.commit()
+            member_role = self.bot.config.roles.member
+
+            if member_role == "default":
+                return
+
+            member_role = user.guild.get_role(member_role)
+
+            if member_role is None:
+                raise utils.InvalidConfig("Roles", "int or @everyone", "Member")
+
+            await user.add_roles(member_role)
 
         except utils.InvalidConfig as error:
             await utils.handle_invalid_config(self, error)
@@ -185,7 +195,7 @@ class ModEvents(commands.Cog):
                     if not re.search(LINK_REGEX, msg, re.IGNORECASE):
                         return
 
-                await utils.auto_punish(self, m.author, m.channel, "Link detected")
+                await utils.auto_punish(self, m.author, m.channel, "Link detected.")
 
                 return await m.delete()
 
@@ -198,7 +208,7 @@ class ModEvents(commands.Cog):
                 if not module.enabled or m.channel.id in module.bypassed_channels:
                     return
 
-                await utils.auto_punish(self, m.author, m.channel, "Slur detected")
+                await utils.auto_punish(self, m.author, m.channel, "Slur detected.")
 
                 return await m.delete()
 
@@ -228,7 +238,7 @@ class ModEvents(commands.Cog):
                 except discord.NotFound:
                     return
 
-                await utils.auto_punish(self, m.author, m.channel, "Invite detected")
+                await utils.auto_punish(self, m.author, m.channel, "Invite detected.")
 
                 return await m.delete()
 
@@ -241,7 +251,7 @@ class ModEvents(commands.Cog):
                 return
 
             if re.search(NSFW_REGEX, m.content, re.IGNORECASE) or len([link for link in module.extra_links if link.lower() in m.content.lower()]) > 0:
-                await utils.auto_punish(self, m.author, m.channel, "NSFW detected")
+                await utils.auto_punish(self, m.author, m.channel, "NSFW detected.")
 
                 return await m.delete()
             
@@ -294,7 +304,7 @@ class ModEvents(commands.Cog):
                 def is_spam(m):
                     return m.content in (message.content, m1.content, m2.content, m3.content, m4.content)
 
-                await utils.auto_punish(self, message.author, message.channel, "Spam detected")
+                await utils.auto_punish(self, message.author, message.channel, "Spam detected.")
 
                 await message.channel.purge(check=is_spam)
 

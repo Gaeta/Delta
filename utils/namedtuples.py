@@ -9,10 +9,10 @@ Presence = namedtuple("Presence", "activity, status")
 Colours = namedtuple("Colours", "embed, error, ban, unban, mute, unmute, kick")
 
 # Configured roles
-Roles = namedtuple("Roles", "admin, mod, muted, member, off_duty, staff, support")
+Roles = namedtuple("Roles", "admin, mod, muted, member, off_duty, staff, support, pings")
 
 # Configured emojis
-Emojis = namedtuple("Emojis", "online, idle, dnd, offline")
+Emojis = namedtuple("Emojis", "online, idle, dnd, offline, streaming")
 
 # Configured channels
 Channels = namedtuple("Channels", "user_log, mod_log, announcements")

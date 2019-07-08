@@ -56,22 +56,158 @@ class AdministratorCommands(commands.Cog):
     @commands.command()
     @utils.guild_only()
     @utils.is_admin()
-    async def announce(self, ctx, *, announcement):
-        """Creates an announcement."""
+    @commands.bot_has_permissions(manage_roles=True)
+    @commands.cooldown(1, 60, commands.BucketType.guild)
+    async def poll(self, ctx, ping_member, *, args):
+        """Creates a poll with up to 5 answers."""
+
+        ping = ping_member.lower()
+
+        if ping not in ("yes", "no", "true", "false", "y", "n", "t", "f"):
+            return await utils.embed(ctx, discord.Embed(title="Poll Failed", description=f"Sorry, the `ping_member` argument should be \"Yes\" or \"No\". Please use `{self.bot.config.prefix}help poll` for more information."), error=True)
+
+        if ping in ("yes", "y", "true", "t"):
+            ping = True
+
+        if ping in ("no", "n", "no", "n"):
+            ping = False
+
+        ques_ans = args.split(" | ")
+        
+        if len(ques_ans) <= 2:
+            return await utils.embed(ctx, discord.Embed(title="Poll Failed", description=f"Sorry, the `args` argument should be follow this syntax: `question | answer 1 | answer 2...`."), error=True)
+
+        question = ques_ans[0]
+        answers = ques_ans[1:6]
 
         channel_id = self.bot.config.channels.announcements
         channel = self.bot.get_channel(channel_id)
 
-        try:
-            await channel.send(announcement)
+        if channel is None:
+            return await utils.embed(ctx, discord.Embed(title="Poll Failed", description=f"Sorry, the `announcements` channel hasn't been configured."), error=True)
 
+        reactions = []
+        text = ""
+
+        i = 1
+        for answer in answers:
+            react = {1: "1\u20e3", 2: "2\u20e3", 3: "3\u20e3", 4: "4\u20e3", 5: "5\u20e3"}[i]
+            reactions.append(react)
+            text += f"{react} {answers[i-1]}\n\n"
+            i += 1
+
+        embed = await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Server Poll", description=f"**{question}**\n\n{text}").set_footer(text=f"Poll by {ctx.author}"), send=False)
+
+        if ping:
+            ping_role = utils.get_ping_role(ctx)
+
+            if ping_role != ctx.guild.default_role:
+                if not ping_role.mentionable:
+                    edited = False
+                    try:
+                        await ping_role.edit(mentionable=True)
+                        edited = True
+
+                    except discord.Forbidden:
+                        return await utils.embed(ctx, discord.Embed(title="Poll Failed", description=f"I do not have permission to **edit** {ping_role.mention}."), error=True)
+
+                try:
+                    message = await channel.send(ping_role.mention, embed=embed)
+                    await utils.embed(ctx, discord.Embed(title="Poll Created", description=f"Your poll was successfully posted in {channel.mention}."), error=True)
+
+                    for r in reactions:
+                        await message.add_reaction(r)
+
+                except:
+                    if channel.permissions_for(ctx.guild.me).add_reactions is False:
+                        issue = f"I do not have permission to **add reactions** in <#{channel.mention}>."
+
+                    if channel.permissions_for(ctx.guild.me).send_messages is False:
+                        issue = f"I do not have permission to **send messages** in <#{channel.mention}>."
+
+                    return await utils.embed(ctx, discord.Embed(title="Poll Failed", description=issue), error=True)
+
+                if edited:
+                    await ping_role.edit(mentionable=False)
+
+                return
+
+        try:
+            message = await channel.send(content="@everyone" if ping else None, embed=embed)
+            await utils.embed(ctx, discord.Embed(title="Poll Created", description=f"Your poll was successfully posted in {channel.mention}."), error=True)
+
+            for r in reactions:
+                await message.add_reaction(r)
+
+        except:
+            if channel.permissions_for(ctx.guild.me).add_reactions is False:
+                issue = f"I do not have permission to **add reactions** in <#{channel.mention}>."
+
+            if channel.permissions_for(ctx.guild.me).send_messages is False:
+                issue = f"I do not have permission to **send messages** in <#{channel.mention}>."
+
+            await utils.embed(ctx, discord.Embed(title="Poll Failed", description=issue), error=True)
+
+    @commands.command()
+    @utils.guild_only()
+    @utils.is_admin()
+    async def announce(self, ctx, ping_member, *, announcement):
+        """Creates an announcement."""
+
+        ping = ping_member.lower()
+
+        if ping not in ("yes", "no", "true", "false", "y", "n", "t", "f"):
+            return await utils.embed(ctx, discord.Embed(title="Announcement Failed", description=f"Sorry, the `ping_member` argument should be \"Yes\" or \"No\". Please use `{self.bot.config.prefix}help announce` for more information."), error=True)
+
+        if ping in ("yes", "y", "true", "t"):
+            ping = True
+
+        if ping in ("no", "n", "no", "n"):
+            ping = False
+
+        channel_id = self.bot.config.channels.announcements
+        channel = self.bot.get_channel(channel_id)
+
+        if channel is None:
+            return await utils.embed(ctx, discord.Embed(title="Announcement Failed", description=f"Sorry, the `announcements` channel hasn't been configured."), error=True)
+
+        if ping:
+            ping_role = utils.get_ping_role(ctx)
+
+            if ping_role != ctx.guild.default_role:
+                if not ping_role.mentionable:
+                    edited = False
+                    try:
+                        await ping_role.edit(mentionable=True)
+                        edited = True
+
+                    except discord.Forbidden:
+                        return await utils.embed(ctx, discord.Embed(title="Announcement Failed", description=f"I do not have permission to **edit** {ping_role.mention}."), error=True)
+
+                try:
+                    await channel.send(announcement)
+                    await utils.embed(ctx, discord.Embed(title="Announcement Sent", description=f"Your announcement was successfully posted in {channel.mention}."), error=True)
+
+                except:
+                    if channel.permissions_for(ctx.guild.me).send_messages is False:
+                        issue = f"I do not have permission to **send messages** in <#{channel.mention}>."
+
+                    return await utils.embed(ctx, discord.Embed(title="Announcement Failed", description=issue), error=True)
+
+                if edited:
+                    await ping_role.edit(mentionable=False)
+
+                return
+
+        try:
+            await channel.send("@everyone\n" if ping else "" + announcement)
             await utils.embed(ctx, discord.Embed(title="Announcement Sent", description=f"Your announcement was successfully posted in {channel.mention}."), error=True)
 
         except:
             if channel.permissions_for(ctx.guild.me).send_messages is False:
                 issue = f"I do not have permission to **send messages** in <#{channel.mention}>."
 
-            await utils.embed(ctx, discord.Embed(title="Announcement Failed", description=issue), error=True)
+            await utils.embed(ctx, discord.Embed(title="Poll Failed", description=issue), error=True)
 
     @commands.command(aliases=["resetcase"])
     @utils.guild_only()

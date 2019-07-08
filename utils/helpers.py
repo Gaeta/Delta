@@ -219,6 +219,19 @@ def get_member_role(ctx):
 
     return role
 
+def get_ping_role(ctx):
+    role = ctx.bot.config.roles.pings
+
+    if role == "default":
+        return ctx.guild.default_role
+
+    role = ctx.guild.get_role(role)
+
+    if role is None:
+        raise InvalidConfig("Roles", "int or @everyone", "Pings")
+
+    return role
+
 async def get_case(bot, case_id):
     with sqlite3.connect(bot.config.database) as db:
         case = db.cursor().execute("SELECT * FROM Cases WHERE Case_ID=?", (case_id,)).fetchone()
@@ -249,3 +262,34 @@ def mod(bot, ctx):
 
 def staff(ctx):
     return [staff for staff in ctx.guild.members if not staff.bot and (staff.guild_permissions.manage_guild or ctx.bot.config.roles.mod in (role.id for role in staff.roles) or ctx.bot.config.roles.admin in (role.id for role in staff.roles) or ctx.bot.config.roles.staff in (role.id for role in staff.roles))]
+
+def is_streaming(user):
+    return isinstance(user.activity, discord.Streaming)
+
+def activity_info(user):
+    return {
+        "ActivityType.playing": f"playing **{user.activity.name}**",
+        "ActivityType.listening": f"listening to **{user.activity.name}**",
+        "ActivityType.watching": f"watching **{user.activity.name}**",
+        "ActivityType.streaming": f"streaming [**{user.activity.name}**]({user.activity.url})"
+    }[str(user.activity.type)]
+
+def hoist_role(user):
+    if len(user.roles) <= 1:
+        return None
+    
+    for role in reversed(user.roles):
+        if role.hoist:
+            return role
+
+    return None
+
+def colour_role(user):
+    if len(user.roles) <= 1:
+        return None
+    
+    for role in reversed(user.roles):
+        if role.colour.value != 0:
+            return role
+
+    return None

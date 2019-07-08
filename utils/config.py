@@ -37,7 +37,16 @@ class Config:
             else:
                 member = int(member)
 
-            return Roles(int(roles["admin"]), int(roles["mod"]), int(roles["muted"]), member, int(roles["offduty"]), int(roles["staff"]), int(roles["support"]))
+            ping    = roles["polls_news_ping"]
+
+            if not isinstance(ping, int):
+                if ping.lower() in ("@everyone", "everyone", "default"):
+                    ping = "default"
+            
+            else:
+                ping = int(ping)
+
+            return Roles(int(roles["admin"]), int(roles["mod"]), int(roles["muted"]), member, int(roles["offduty"]), int(roles["staff"]), int(roles["support"]), ping)
         
         except:
             raise InvalidConfig("Roles", "list of int")
@@ -57,7 +66,7 @@ class Config:
         emojis = self.config["emojis"]
 
         try:
-            return Emojis(int(emojis["online"]), int(emojis["idle"]), int(emojis["dnd"]), int(emojis["offline"]))
+            return Emojis(int(emojis["online"]), int(emojis["idle"]), int(emojis["dnd"]), int(emojis["offline"]), int(emojis["streaming"]))
     
         except:
             raise InvalidConfig("Emojis", "list of int")
