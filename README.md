@@ -52,6 +52,9 @@ Here's a list of commands that you will find in Delta, you can also use `db.help
 
 > staff
 - Shows a list of staff members.
+
+> user
+- Shows info on a user or yourself.
 ```
 
 - Moderator
