@@ -126,7 +126,7 @@ class GeneralCommands(commands.Cog):
     @commands.command(aliases=["userinfo"])
     @utils.guild_only()
     async def user(self, ctx, user: discord.Member=None):
-        """Shows info on a user."""
+        """Shows info on a user or yourself."""
 
         if user is None:
             user = ctx.author
@@ -143,9 +143,9 @@ class GeneralCommands(commands.Cog):
 
         hoist_role = utils.hoist_role(user)
         colour_role = utils.colour_role(user)
-        user.roles.remove(ctx.guild.default_role)
+        roles = user.roles[1:]
 
-        await utils.embed(ctx, discord.Embed(timestamp=user.created_at, colour=user.colour, title="User Info", description=f"{emoji} {user.mention} (`{user.nick if user.nick else user.name}`)" + ("\n" + "\u2000"*4 + f"{utils.activity_info(user)}" if user.activity is not None else "")).add_field(name="User ID", value=user.id).add_field(name="Highest Role", value=f"{user.top_role.mention} ({user.top_role.name})" if user.top_role.id != ctx.guild.id else "None").add_field(name="Hoist Role", value=f"{hoist_role.mention} ({hoist_role.name})" if hoist_role is not None else "None").add_field(name="Colour Role", value=f"{colour_role.mention} ({colour_role.name})" if colour_role is not None else "None").add_field(name=f"Roles ({len(user.roles)-1})", value=", ".join(role.name for role in user.roles[::-1][0:10])  + ("..." if len(user.roles) > 10 else "") if len(user.roles) > 1 else "None").set_footer(text="Created at:").set_thumbnail(url=user.avatar_url), override_colour=user.colour.value != 0)
+        await utils.embed(ctx, discord.Embed(timestamp=user.created_at, colour=user.colour, title="User Info", description=f"{emoji} {user.mention} (`{user.nick if user.nick else user.name}`)" + ("\n" + "\u2000"*4 + f"{utils.activity_info(user)}" if user.activity is not None else "")).add_field(name="User ID", value=user.id).add_field(name="Highest Role", value=f"{user.top_role.mention} ({user.top_role.name})" if user.top_role.id != ctx.guild.id else "None").add_field(name="Hoist Role", value=f"{hoist_role.mention} ({hoist_role.name})" if hoist_role is not None else "None").add_field(name="Colour Role", value=f"{colour_role.mention} ({colour_role.name})" if colour_role is not None else "None").add_field(name=f"Roles ({len(roles)})", value=", ".join(role.name for role in roles[::-1][0:10])  + ("..." if len(roles) > 10 else "") if len(roles) > 0 else "None", inline=False).set_footer(text="Created at:").set_thumbnail(url=user.avatar_url), override_colour=user.colour.value != 0)
 
 def setup(bot):
     bot.add_cog(GeneralCommands(bot))
