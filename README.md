@@ -26,6 +26,7 @@ Here's a list of every feature you can expect to see in Delta:
 + Mods logs have an editable reason and can be fetched via a command
 + On/Off Duty system designed to reduce the amount of DMs and pings that staff get
 + Pingmod command that pings a random, on-duty mod that is neither idle nor offline
++ Efficient caching that includes db to minimise queries
 
 ### Commands
 
@@ -47,14 +48,53 @@ Here's a list of commands that you will find in Delta, you can also use `db.help
 > pingmod
 - Picks an on-duty staff member at random and pings them.
 
+> pings
+- Shows the 20 most recent mentions.
+
 > polls
 - Toggles the poll/announcement ping role.
+
+> server
+- Displays info on the server.
 
 > staff
 - Shows a list of staff members.
 
+> uptime
+- Shows how long the bot has been running for.
+
 > user
 - Shows info on a user or yourself.
+```
+
+- Tags
+```
+> tag
+- Sends the text of the provided tag.
+
+> tag add
+- Creates a new tag.
+
+> tag claim
+- Claims a tag of a user that left the server.
+
+> tag delete
+- Deletes a tag you own or moderate.
+
+> tag edit
+- Edits the text of a tag.
+
+> tag list
+- Lists the tags of you or the provided user.
+
+> tag rename
+- Changes the name of a tag.
+
+> tag transfer
+- Gives a tag you own to someone else.
+
+> tags
+- Shorthand for tag list
 ```
 
 - Moderator
