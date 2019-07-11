@@ -1,6 +1,7 @@
-import discord, utils, sys
+import discord, utils, sys, sqlite3
 
 from discord.ext import commands
+from datetime import datetime
 
 class Delta(commands.AutoShardedBot):
     def __init__(self):
@@ -19,6 +20,16 @@ class Delta(commands.AutoShardedBot):
 
             except commands.ExtensionError as error:
                 utils.cog_error(error, self.config)
+
+        with sqlite3.connect(self.config.database) as db:
+            try:
+                all_tags = db.cursor().execute("SELECT * FROM Tags").fetchall()
+
+                for tag in all_tags:
+                    self.cache.tags[tag[1]] = tag
+
+            except:
+                pass
         
         sys.stderr = open(self.config.stderr, "w")
 

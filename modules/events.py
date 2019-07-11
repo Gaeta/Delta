@@ -1,4 +1,4 @@
-import discord, re, utils, sqlite3
+import discord, re, utils, sqlite3, traceback, sys
 
 from discord.ext import commands
 from datetime import datetime
@@ -30,7 +30,7 @@ class BasicEvents(commands.Cog):
         await self.bot.change_presence(activity=display.activity, status=display.status)
 
         with sqlite3.connect(self.bot.config.database) as db:
-            for table, columns in (("Settings", "Case_ID TEXT"), ("Cases", "Mod_ID TEXT, User_ID TEXT, Case_ID TEXT, Msg_ID TEXT, Punishment TEXT, Reason TEXT"), ("Mute_Evaders", "User_ID TEXT"), ("Duty", "User_ID TEXT, Admin TEXT, Mod TEXT, Staff TEXT, Support TEXT")):
+            for table, columns in (("Settings", "Case_ID TEXT"), ("Cases", "Mod_ID TEXT, User_ID TEXT, Case_ID TEXT, Msg_ID TEXT, Punishment TEXT, Reason TEXT"), ("Mute_Evaders", "User_ID TEXT"), ("Duty", "User_ID TEXT, Admin TEXT, Mod TEXT, Staff TEXT, Support TEXT"), ("Tags", "Owner_ID TEXT, Name TEXT, Content TEXT")):
                 db.cursor().execute(f"CREATE TABLE IF NOT EXISTS {table} ({columns})")
             
             if db.cursor().execute("SELECT * FROM Settings").fetchone() is None:
@@ -118,7 +118,7 @@ class BasicEvents(commands.Cog):
                 evader = db.cursor().execute("SELECT User_ID FROM Mute_Evaders WHERE User_ID=?", (user.id,)).fetchone()
 
                 if evader is not None:
-                    self.bot.log_interceptors.add(f"{user.id}:{user.guild.id}:Mute")
+                    self.bot.cache.logs.add(f"{user.id}:{user.guild.id}:Mute")
                     await utils.mute(self.bot, user, f"[ Auto Mod ] >> Mute evasion detected.")
                     await utils.mod_log(self, user, "mute", self.bot.user, f"[ Auto Mod ] >> Mute evasion detected.")
 
@@ -282,9 +282,10 @@ class ModEvents(commands.Cog):
                 return
 
             timeout = module.threshold_seconds
+            cache = self.bot.cache.spam
 
             try:
-                self.spam_ignore.add(f"{message.author.id}:{message.channel.id}")
+                cache.add(f"{message.author.id}:{message.channel.id}")
 
                 m1 = await self.bot.wait_for("message", check=is_author, timeout=timeout)
                 time_gap = m1.created_at.second + timeout
@@ -307,10 +308,11 @@ class ModEvents(commands.Cog):
                 await utils.auto_punish(self, message.author, message.channel, "Spam detected.")
 
                 await message.channel.purge(check=is_spam)
+                cache.remove(f"{message.author.id}:{message.channel.id}")
 
             except:
                 try:
-                    return self.spam_ignore.remove(f"{message.author.id}:{message.channel.id}")
+                    return cache.remove(f"{message.author.id}:{message.channel.id}")
                 
                 except:
                     return
@@ -325,16 +327,17 @@ class ModEvents(commands.Cog):
                 return
 
             role = after.guild.get_role(self.bot.config.roles.muted)
+            cache = self.bot.cache.logs
 
             if role in after.roles and not role in before.roles:
-                if f"{after.id}:{after.guild.id}:Mute" in self.bot.log_interceptors:
-                    return self.bot.log_interceptors.remove(f"{after.id}:{after.guild.id}:Mute")
+                if f"{after.id}:{after.guild.id}:Mute" in cache:
+                    return cache.remove(f"{after.id}:{after.guild.id}:Mute")
 
                 await utils.mod_log(self, after, "mute", "???")
 
             if role in before.roles and not role in after.roles:
-                if f"{after.id}:{after.guild.id}:Unmute" in self.bot.log_interceptors:
-                    return self.bot.log_interceptors.remove(f"{after.id}:{after.guild.id}:Unmute")
+                if f"{after.id}:{after.guild.id}:Unmute" in cache:
+                    return cache.remove(f"{after.id}:{after.guild.id}:Unmute")
 
                 await utils.mod_log(self, after, "unmute", "???")
 
@@ -350,8 +353,10 @@ class ModEvents(commands.Cog):
             if user.guild.id != self.bot.config.server or user.id == self.bot.user.id:
                 return
 
-            if f"{user.id}:{guild.id}:Unban" in self.bot.log_interceptors:
-                return self.bot.log_interceptors.remove(f"{user.id}:{guild.id}:Unban")
+            cache = self.bot.cache.logs
+
+            if f"{user.id}:{guild.id}:Unban" in cache:
+                return cache.remove(f"{user.id}:{guild.id}:Unban")
 
             await utils.mod_log(self, user, "unban", "???")
         
@@ -371,9 +376,10 @@ class ModEvents(commands.Cog):
                 return
 
             role = user.guild.get_role(self.bot.config.roles.muted)
+            cache = self.bot.cache.logs
 
-            if f"{user.id}:{user.guild.id}:Kick" in self.bot.log_interceptors:
-                return self.bot.log_interceptors.remove(f"{user.id}:{user.guild.id}:Kick")
+            if f"{user.id}:{user.guild.id}:Kick" in cache:
+                return cache.remove(f"{user.id}:{user.guild.id}:Kick")
 
             async for log in user.guild.audit_logs(limit=1, action=discord.AuditLogAction.kick, after=datetime.utcnow()):
                 now = datetime.utcnow().second
@@ -397,8 +403,10 @@ class ModEvents(commands.Cog):
             if user.guild.id != self.bot.config.server or user.id == self.bot.user.id:
                 return
 
-            if f"{user.id}:{guild.id}:Ban" in self.bot.log_interceptors:
-                return self.bot.log_interceptors.remove(f"{user.id}:{guild.id}:Ban")
+            cache = self.bot.cache.logs
+
+            if f"{user.id}:{guild.id}:Ban" in cache:
+                return cache.remove(f"{user.id}:{guild.id}:Ban")
 
             try:
                 reason = await guild.fetch_ban(user).reason
@@ -411,6 +419,25 @@ class ModEvents(commands.Cog):
         except utils.InvalidConfig as error:
             await utils.handle_invalid_config(self, error)
 
+class PingCounter(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+    
+    @commands.Cog.listener()
+    async def on_message(self, m):
+        try:
+            if m.guild is None:
+                return
+
+            if m.guild.id != self.bot.config.server or len(m.mentions) == 0:
+                return
+
+            for member in m.mentions:
+                self.bot.cache.pings.append((m.author, member, m.created_at, m.jump_url))
+
+        except utils.InvalidConfig as error:
+            await utils.handle_invalid_config(self, error)
+
 def setup(bot):
-    bot.add_cog(BasicEvents(bot))
-    bot.add_cog(ModEvents(bot))
+    for cog in (BasicEvents, ModEvents, PingCounter):
+        bot.add_cog(cog(bot))

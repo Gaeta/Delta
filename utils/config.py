@@ -66,7 +66,7 @@ class Config:
         emojis = self.config["emojis"]
 
         try:
-            return Emojis(int(emojis["online"]), int(emojis["idle"]), int(emojis["dnd"]), int(emojis["offline"]), int(emojis["streaming"]))
+            return Emojis(int(emojis["online"]), int(emojis["idle"]), int(emojis["dnd"]), int(emojis["offline"]), int(emojis["streaming"]), int(emojis["text_channel"]), int(emojis["voice_channel"]), int(emojis["green_tick"]), int(emojis["red_tick"]), int(emojis["gray_tick"]), int(emojis["bot_tag"]))
     
         except:
             raise InvalidConfig("Emojis", "list of int")
@@ -124,7 +124,7 @@ class Config:
 
     @property
     def case_insensitive(self):
-        return bool(self.config["case_insensitive"])
+        return self.config["case_insensitive"]
 
     def anti(self, setting="invite"):
         auto_mod = self.config["auto_moderator"]["enabled"]
@@ -142,4 +142,4 @@ class Config:
         if config["punishment"] not in ("kick", "ban", "mute"):
             raise InvalidConfig("Auto Mod", "one of kick ban or mute", "Punishment")
 
-        return AutoMod(bool(config["enabled"]), config["punishment"])
+        return AutoMod(config["enabled"], config["punishment"])

@@ -2,8 +2,8 @@ import discord, sys, os, asyncio, sqlite3
 
 from discord.ext import commands
 from datetime import datetime
-from .namedtuples import AntiSpam, AntiSlur, AntiInvite, AntiNSFW, AntiLink, Case
-from .exceptions import InvalidConfig
+from .namedtuples import AntiSpam, AntiSlur, AntiInvite, AntiNSFW, AntiLink, Case, Tag
+from .exceptions import InvalidConfig, TagNotFound
 
 async def handle_invalid_config(ctx, error):
     if error.subsetting is not None:
@@ -84,14 +84,17 @@ async def embed(ctx, embed: discord.Embed, send=True, error=False, delete_after=
     return embed
 
 def command_usage(ctx, command):
-    sig = command.signature
-    call = sig.split(" ")[0]
-    options = ""
+    if command.usage is None:
+        sig = command.signature
+        call = sig.split(" ")[0]
+        options = ""
 
-    if call != "":
-        options = sig.split(call)[1]
+        if call != "":
+            options = sig.split(call)[1]
 
-    return f"`{ctx.bot.config.prefix}{f'{command.parent} ' if command.parent else ''}{command.name} {call + options}`"
+        return f"`{ctx.bot.config.prefix}{f'{command.parent} ' if command.parent else ''}{command.name} {call + options}`"
+
+    return f"`{ctx.bot.config.prefix}{command.usage}`"
 
 def auto_mod(bot, setting="invite"):
     config = bot.config.anti(setting.lower())
@@ -268,10 +271,12 @@ def is_streaming(user):
 
 def activity_info(user):
     return {
-        "ActivityType.playing": f"playing **{user.activity.name}**",
-        "ActivityType.listening": f"listening to **{user.activity.name}**",
-        "ActivityType.watching": f"watching **{user.activity.name}**",
-        "ActivityType.streaming": f"streaming [**{user.activity.name}**]({user.activity.url})"
+        "ActivityType.playing": f"Playing **{user.activity.name}**",
+        "ActivityType.listening": f"Listening to **{user.activity.name}**",
+        "ActivityType.watching": f"Watching **{user.activity.name}**",
+        "ActivityType.streaming": f"Streaming [**{user.activity.name}**]({user.activity.url if hasattr(user.activity, 'url') else 'https://twitch.tv/discordapp'})",
+        "-1": f"**{user.activity.name}**",
+        "4": f"{user.activity.state if hasattr(user.activity, 'state') else user.activity.name}"
     }[str(user.activity.type)]
 
 def hoist_role(user):
@@ -293,3 +298,48 @@ def colour_role(user):
             return role
 
     return None
+
+def tick(ctx, e_type):
+    emoji_list = ctx.bot.config.emojis
+
+    if e_type is True:
+        return f"<:greenTick:{emoji_list.green_tick}>"
+
+    if e_type is None:
+        return f"<:grayTick:{emoji_list.gray_tick}>"
+
+    if e_type is False:
+        return f"<:redTick:{emoji_list.red_tick}>"
+
+async def fetch_tag(ctx, name):
+    if name in ctx.bot.cache.tags.keys():
+        tag = ctx.bot.cache.tags[name]
+
+        owner = await ctx.bot.fetch_user(int(tag[0]))
+
+        return Tag(owner, tag[1], tag[2])
+
+    with sqlite3.connect(ctx.bot.config.database) as db:
+        query = db.cursor().execute("SELECT Owner_ID, Name, Content FROM Tags WHERE Name=?", (name,)).fetchone()
+
+        if query is None:
+            raise TagNotFound(name)
+
+        owner = await ctx.bot.fetch_user(int(query[0]))
+
+        return Tag(owner, query[1], query[2])
+
+def display_time(seconds, granularity=2):
+    result = []
+
+    for name, count in (("weeks", 60 * 60 * 24 * 7), ("days", 60 * 60 * 24), ("hours", 60 * 60), ("minutes", 60), ("seconds", 1)):
+        value = seconds // count
+        if value:
+            seconds -= value * count
+
+            if value == 1:
+                name = name.rstrip("s")
+            
+            result.append(f"{value} {name}")
+
+    return ", ".join(result[:granularity])

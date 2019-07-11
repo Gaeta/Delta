@@ -3,25 +3,8 @@ import discord, sqlite3, asyncio, utils, re
 from discord.ext import commands
 from datetime import datetime
 
-intervals = (("weeks", 60 * 60 * 24 * 7), ("days", 60 * 60 * 24), ("hours", 60 * 60), ("minutes", 60), ("seconds", 1))
-
 TIME_REGEX = re.compile("(?:(\d{1,5})\s?(h|hours|hrs|hour|hr|s|seconds|secs|sec|second|m|mins|minutes|minute|min|d|days|day))+?")
 TIME_DICT = {"h": 3600, "s": 1, "m": 60, "d": 86400}
-
-def display_time(seconds, granularity=2):
-    result = []
-
-    for name, count in intervals:
-        value = seconds // count
-        if value:
-            seconds -= value * count
-
-            if value == 1:
-                name = name.rstrip("s")
-            
-            result.append("{} {}".format(value, name))
-
-    return ", ".join(result[:granularity])
 
 class TimeConverter(commands.Converter):
     async def convert(self, argument):
@@ -53,7 +36,7 @@ class AdministratorCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(usage="poll <ping> <question> | <answer 1> | <answer2...>")
     @utils.guild_only()
     @utils.is_admin()
     @commands.bot_has_permissions(manage_roles=True)
@@ -148,7 +131,7 @@ class AdministratorCommands(commands.Cog):
 
             await utils.embed(ctx, discord.Embed(title="Poll Failed", description=issue), error=True)
 
-    @commands.command()
+    @commands.command(usage="announce <ping> <announcement>")
     @utils.guild_only()
     @utils.is_admin()
     async def announce(self, ctx, ping_member, *, announcement):
@@ -209,7 +192,7 @@ class AdministratorCommands(commands.Cog):
 
             await utils.embed(ctx, discord.Embed(title="Poll Failed", description=issue), error=True)
 
-    @commands.command(aliases=["resetcase"])
+    @commands.command(aliases=["resetcase"], usage="resetid")
     @utils.guild_only()
     @utils.is_admin()
     async def resetid(self, ctx):
@@ -222,7 +205,7 @@ class AdministratorCommands(commands.Cog):
 
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Data Wiped", description="All case data has been successfully cleared."))
 
-    @commands.command(aliases=["reloadconfig"])
+    @commands.command(aliases=["reloadconfig"], usage="reload")
     @utils.guild_only()
     @utils.is_admin()
     async def reload(self, ctx):
@@ -234,7 +217,7 @@ class AdministratorCommands(commands.Cog):
 
         await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Config Reloaded", description="All config data has been successfully reloaded."))
 
-    @commands.command()
+    @commands.command(usage="lockdown [time]")
     @utils.guild_only()
     @commands.bot_has_permissions(manage_channels=True)
     @utils.is_admin()
@@ -261,7 +244,7 @@ class AdministratorCommands(commands.Cog):
             if seconds < 1:
                 return await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Lockdown Activated", description=f"Lockdown has been activated by **{ctx.author}**."))
 
-            await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Lockdown Activated", description=f"Lockdown has been activated by **{ctx.author}** for {display_time(round(seconds), 4)}."))
+            await utils.embed(ctx, discord.Embed(timestamp=datetime.utcnow(), title="Lockdown Activated", description=f"Lockdown has been activated by **{ctx.author}** for {utils.display_time(round(seconds), 4)}."))
             await asyncio.sleep(seconds)
 
             ows = ctx.channel.overwrites_for(member_role)

@@ -12,13 +12,16 @@ Colours = namedtuple("Colours", "embed, error, ban, unban, mute, unmute, kick")
 Roles = namedtuple("Roles", "admin, mod, muted, member, off_duty, staff, support, pings")
 
 # Configured emojis
-Emojis = namedtuple("Emojis", "online, idle, dnd, offline, streaming")
+Emojis = namedtuple("Emojis", "online, idle, dnd, offline, streaming, text_channel, voice_channel, green_tick, red_tick, gray_tick, bot_tag")
 
 # Configured channels
 Channels = namedtuple("Channels", "user_log, mod_log, announcements")
 
 # Case
 Case = namedtuple("Case", "mod, user, case, message, punishment, reason")
+
+# Tag
+Tag = namedtuple("Tag", "owner, name, content")
 
 # ---- Auto ----
 
