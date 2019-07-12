@@ -168,7 +168,7 @@ class AdministratorCommands(commands.Cog):
                         return await utils.embed(ctx, discord.Embed(title="Announcement Failed", description=f"I do not have permission to **edit** {ping_role.mention}."), error=True)
 
                 try:
-                    await channel.send(announcement)
+                    await channel.send(f"{ping_role.mention}\n{announcement}")
                     await utils.embed(ctx, discord.Embed(title="Announcement Sent", description=f"Your announcement was successfully posted in {channel.mention}."), error=True)
 
                 except:
