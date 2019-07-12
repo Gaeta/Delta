@@ -30,7 +30,7 @@ class BasicEvents(commands.Cog):
         await self.bot.change_presence(activity=display.activity, status=display.status)
 
         with sqlite3.connect(self.bot.config.database) as db:
-            for table, columns in (("Settings", "Case_ID TEXT"), ("Cases", "Mod_ID TEXT, User_ID TEXT, Case_ID TEXT, Msg_ID TEXT, Punishment TEXT, Reason TEXT"), ("Mute_Evaders", "User_ID TEXT"), ("Duty", "User_ID TEXT, Admin TEXT, Mod TEXT, Staff TEXT, Support TEXT"), ("Tags", "Owner_ID TEXT, Name TEXT, Content TEXT")):
+            for table, columns in (("Prefixes", "Used_ID TEXT, Prefixes TEXT"), ("Settings", "Case_ID TEXT"), ("Cases", "Mod_ID TEXT, User_ID TEXT, Case_ID TEXT, Msg_ID TEXT, Punishment TEXT, Reason TEXT"), ("Mute_Evaders", "User_ID TEXT"), ("Duty", "User_ID TEXT, Admin TEXT, Mod TEXT, Staff TEXT, Support TEXT"), ("Tags", "Owner_ID TEXT, Name TEXT, Content TEXT")):
                 db.cursor().execute(f"CREATE TABLE IF NOT EXISTS {table} ({columns})")
             
             if db.cursor().execute("SELECT * FROM Settings").fetchone() is None:
@@ -114,28 +114,29 @@ class BasicEvents(commands.Cog):
 
             await utils.user_log(self, user)
 
-            with sqlite3.connect(self.bot.config.database) as db:
-                evader = db.cursor().execute("SELECT User_ID FROM Mute_Evaders WHERE User_ID=?", (user.id,)).fetchone()
+            if user.guild.me.guild_permissions.manage_roles:
+                with sqlite3.connect(self.bot.config.database) as db:
+                    evader = db.cursor().execute("SELECT User_ID FROM Mute_Evaders WHERE User_ID=?", (user.id,)).fetchone()
 
-                if evader is not None:
-                    self.bot.cache.logs.add(f"{user.id}:{user.guild.id}:Mute")
-                    await utils.mute(self.bot, user, f"[ Auto Mod ] >> Mute evasion detected.")
-                    await utils.mod_log(self, user, "mute", self.bot.user, f"[ Auto Mod ] >> Mute evasion detected.")
+                    if evader is not None:
+                        self.bot.cache.logs.add(f"{user.id}:{user.guild.id}:Mute")
+                        await utils.mute(self.bot, user, f"[ Auto Mod ] >> Mute evasion detected.")
+                        await utils.mod_log(self, user, "mute", self.bot.user, f"[ Auto Mod ] >> Mute evasion detected.")
 
-                    db.cursor().execute("DELETE FROM Mute_Evaders WHERE User_ID=?", (user.id,))
-                    db.commit()
+                        db.cursor().execute("DELETE FROM Mute_Evaders WHERE User_ID=?", (user.id,))
+                        db.commit()
 
-            member_role = self.bot.config.roles.member
+                member_role = self.bot.config.roles.member
 
-            if member_role == "default":
-                return
+                if member_role == "default":
+                    return
 
-            member_role = user.guild.get_role(member_role)
+                member_role = user.guild.get_role(member_role)
 
-            if member_role is None:
-                raise utils.InvalidConfig("Roles", "int or @everyone", "Member")
+                if member_role is None:
+                    raise utils.InvalidConfig("Roles", "int or @everyone", "Member")
 
-            await user.add_roles(member_role)
+                await user.add_roles(member_role)
 
         except utils.InvalidConfig as error:
             await utils.handle_invalid_config(self, error)
@@ -170,7 +171,7 @@ class ModEvents(commands.Cog):
             if m.guild.id != self.bot.config.server:
                 return
 
-            if m.author.guild_permissions.manage_messages or utils.mod(self.bot, m):
+            if m.author.guild_permissions.manage_messages or utils.mod(self.bot, m) or not m.guild.me.guild_permissions.manage_messages:
                 return
 
             if re.search(LINK_REGEX, m.content, re.IGNORECASE):
@@ -267,7 +268,7 @@ class ModEvents(commands.Cog):
             if message.guild.id != self.bot.config.server:
                 return
 
-            if message.author.guild_permissions.manage_messages or utils.mod(self.bot, message):
+            if message.author.guild_permissions.manage_messages or utils.mod(self.bot, message) or not m.guild.me.guild_permissions.manage_messages:
                 return
 
             def is_author(m):

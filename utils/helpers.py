@@ -1,4 +1,4 @@
-import discord, sys, os, asyncio, sqlite3
+import discord, sys, os, asyncio, sqlite3, ast
 
 from discord.ext import commands
 from datetime import datetime
@@ -343,3 +343,23 @@ def display_time(seconds, granularity=2):
             result.append(f"{value} {name}")
 
     return ", ".join(result[:granularity])
+
+def get_user_prefixes(bot, user):
+    if user.id in bot.cache.prefixes.keys():
+        return bot.cache.prefixes[user.id]
+
+    with sqlite3.connect(bot.config.database) as db:
+        ensure_prefix(bot, user, db)
+
+        query = db.cursor().execute("SELECT Prefixes FROM Prefixes WHERE Used_ID=?", (user.id,)).fetchone()
+
+        return ast.literal_eval(query[0])
+
+def ensure_prefix(bot, user, db):
+    if db.cursor().execute("SELECT * FROM Prefixes WHERE Used_ID=?", (user.id,)).fetchone() is None:
+        value = [f"{bot.user.mention} ", bot.config.prefix]
+
+        db.cursor().execute("INSERT INTO Prefixes VALUES (?, ?)", (user.id, str(value)))
+        db.commit()
+
+        bot.cache.prefixes[user.id] = value

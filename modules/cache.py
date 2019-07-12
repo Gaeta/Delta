@@ -4,8 +4,8 @@ from discord.ext import commands
 from collections import namedtuple
 from datetime import datetime
 
-Storage = namedtuple("Storage", "spam, tags, logs, pings, boot")
-default_values = {"spam": set(), "tags": {}, "logs": [], "pings": [], "boot": datetime.utcnow()}
+Storage = namedtuple("Storage", "spam, tags, logs, pings, prefixes, boot")
+default_values = {"spam": set(), "tags": {}, "logs": set(), "pings": [], "prefixes": {}, "boot": datetime.utcnow()}
 
 class Cache(commands.Cog):
     def __init__(self, bot):

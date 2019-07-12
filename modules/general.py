@@ -26,7 +26,7 @@ class GeneralCommands(commands.Cog):
         await msg.edit(content=None, embed=fmt)
 
     @commands.command(aliaes=["commands"], usage="help [command]")
-    async def help(self, ctx, command=None):
+    async def help(self, ctx, *, command=None):
         """Shows a list of every Delta command."""
 
         if not command:

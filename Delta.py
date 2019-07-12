@@ -1,13 +1,16 @@
-import discord, utils, sys, sqlite3
+import discord, utils, sys, sqlite3, ast
 
 from discord.ext import commands
 from datetime import datetime
+
+def get_prefix(bot, m):
+    return commands.when_mentioned_or(*utils.get_user_prefixes(bot, m.author))(bot, m)
 
 class Delta(commands.AutoShardedBot):
     def __init__(self):
         self.config = utils.Config()
 
-        super().__init__(command_prefix=self.config.prefix,
+        super().__init__(command_prefix=get_prefix,
                          description="A bot that does simple yet marvellous things!",
                          case_insensitive=self.config.case_insensitive)
 
@@ -27,6 +30,11 @@ class Delta(commands.AutoShardedBot):
 
                 for tag in all_tags:
                     self.cache.tags[tag[1]] = tag
+                
+                all_prefixes = db.cursor().execute("SELECT * FROM Prefixes").fetchall()
+
+                for prefix in all_prefixes:
+                    self.cache.prefixes[prefix[0]] = ast.literal_eval(prefix[1])
 
             except:
                 pass

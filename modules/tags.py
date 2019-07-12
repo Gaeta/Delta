@@ -31,7 +31,7 @@ class Tags(commands.Cog):
         try:
             tag = await utils.fetch_tag(ctx, name)
 
-            return await utils.embed(ctx, discord.Embed(title="Tag Already Exists", description=f"Sorry, the tag `{name}` is already owned by {tag.owner.mention}. Why not check it out by using `{ctx.bot.config.prefix}tag {name}`?"), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Tag Already Exists", description=f"Sorry, the tag **{name}** is already owned by {tag.owner.mention}. Why not check it out by using **{ctx.bot.config.prefix}tag {name}**?"), error=True)
 
         except:
             pass
@@ -42,7 +42,7 @@ class Tags(commands.Cog):
 
         self.bot.cache.tags[name] = [ctx.author.id, name, content]
 
-        await utils.embed(ctx, discord.Embed(title="Tag Created", description=f"Congratulations, you are now the proud owner of the `{name}` tag. You can retrieve it by using `{ctx.bot.config.prefix}tag {name}`!"))
+        await utils.embed(ctx, discord.Embed(title="Tag Created", description=f"Congratulations, you are now the proud owner of the **{name}** tag. You can retrieve it by using **{ctx.bot.config.prefix}tag {name}**!"))
 
     @tag.command(name="rename", usage="tag rename <name> <new name>")
     @utils.guild_only()
@@ -56,7 +56,7 @@ class Tags(commands.Cog):
             tag = await utils.fetch_tag(ctx, name)
 
         except:
-            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag `{name}` doesn't appear to be in the database. Why not claim it by using `{ctx.bot.config.prefix}tag add {new_name} <content>`?"), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag **{name}** doesn't appear to be in the database. Why not claim it by using **{ctx.bot.config.prefix}tag add {new_name} <content>**?"), error=True)
 
         if name == new_name:
             return await utils.embed(ctx, discord.Embed(title="Cannot Rename", description=f"Sorry, you can't rename a tag to the same name."), error=True)
@@ -67,7 +67,7 @@ class Tags(commands.Cog):
             if mod is None:
                 raise utils.InvalidConfig("Roles", "int", "Mod")
 
-            return await utils.embed(ctx, discord.Embed(title="Unauthorized", description=f"Sorry, only {tag.owner.mention} and those with the {mod.mention} role can rename the `{name}` tag."), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Unauthorized", description=f"Sorry, only {tag.owner.mention} and those with the {mod.mention} role can rename the **{name}** tag."), error=True)
 
         with sqlite3.connect(ctx.bot.config.database) as db:
             db.cursor().execute("UPDATE Tags SET Name=? WHERE Name=?", (new_name, name))
@@ -76,7 +76,7 @@ class Tags(commands.Cog):
         self.bot.cache.tags.pop(name)
         self.bot.cache.tags[new_name] = [tag.owner.id, new_name, tag.content]
 
-        await utils.embed(ctx, discord.Embed(title="Tag Renamed", description=f"You have successfully renamed the tag `{name}` to `{new_name}`. You can retrieve it by using `{ctx.bot.config.prefix}tag {new_name}`!"))
+        await utils.embed(ctx, discord.Embed(title="Tag Renamed", description=f"You have successfully renamed the tag **{name}** to **{new_name}**. You can retrieve it by using **{ctx.bot.config.prefix}tag {new_name}**!"))
 
     @tag.command(name="delete", aliases=["remove"], usage="tag delete <name>")
     @utils.guild_only()
@@ -89,7 +89,7 @@ class Tags(commands.Cog):
             tag = await utils.fetch_tag(ctx, name)
 
         except:
-            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag `{name}` doesn't appear to be in the database. Why not claim it by using `{ctx.bot.config.prefix}tag add {name} <content>`?"), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag **{name}** doesn't appear to be in the database. Why not claim it by using **{ctx.bot.config.prefix}tag add {name} <content>**?"), error=True)
 
         if tag.owner.id != ctx.author.id and not utils.mod(self.bot, ctx):
             mod = ctx.guild.get_role(self.bot.config.roles.mod)
@@ -97,7 +97,7 @@ class Tags(commands.Cog):
             if mod is None:
                 raise utils.InvalidConfig("Roles", "int", "Mod")
 
-            return await utils.embed(ctx, discord.Embed(title="Unauthorized", description=f"Sorry, only {tag.owner.mention} and those with the {mod.mention} role can delete the `{name}` tag."), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Unauthorized", description=f"Sorry, only {tag.owner.mention} and those with the {mod.mention} role can delete the **{name}** tag."), error=True)
 
         with sqlite3.connect(ctx.bot.config.database) as db:
             db.cursor().execute("DELETE FROM Tags WHERE Name=?", (name,))
@@ -105,7 +105,7 @@ class Tags(commands.Cog):
 
         self.bot.cache.tags.pop(name)
 
-        await utils.embed(ctx, discord.Embed(title="Tag Deleted", description=f"You have successfully deleted the tag `{name}`."))
+        await utils.embed(ctx, discord.Embed(title="Tag Deleted", description=f"You have successfully deleted the tag **{name}**."))
 
     @tag.command(name="edit", usage="tag edit <name> <new content>")
     @utils.guild_only()
@@ -118,7 +118,7 @@ class Tags(commands.Cog):
             tag = await utils.fetch_tag(ctx, name)
 
         except:
-            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag `{name}` doesn't appear to be in the database. Why not claim it by using `{ctx.bot.config.prefix}tag add {name} <content>`?"), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag **{name}** doesn't appear to be in the database. Why not claim it by using **{ctx.bot.config.prefix}tag add {name} <content>**?"), error=True)
 
         if tag.owner.id != ctx.author.id and not utils.mod(self.bot, ctx):
             mod = ctx.guild.get_role(self.bot.config.roles.mod)
@@ -126,7 +126,7 @@ class Tags(commands.Cog):
             if mod is None:
                 raise utils.InvalidConfig("Roles", "int", "Mod")
 
-            return await utils.embed(ctx, discord.Embed(title="Unauthorized", description=f"Sorry, only {tag.owner.mention} and those with the {mod.mention} role can edit the `{name}` tag."), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Unauthorized", description=f"Sorry, only {tag.owner.mention} and those with the {mod.mention} role can edit the **{name}** tag."), error=True)
 
         with sqlite3.connect(ctx.bot.config.database) as db:
             db.cursor().execute("UPDATE Tags SET Content=? WHERE Name=?", (new_content, name))
@@ -134,7 +134,7 @@ class Tags(commands.Cog):
 
         self.bot.cache.tags[name][2] = new_content
 
-        await utils.embed(ctx, discord.Embed(title="Tag Renamed", description=f"You have successfully edited the content for the tag `{name}`. You can retrieve it by using `{ctx.bot.config.prefix}tag {name}`!"))
+        await utils.embed(ctx, discord.Embed(title="Tag Renamed", description=f"You have successfully edited the content for the tag **{name}**. You can retrieve it by using **{ctx.bot.config.prefix}tag {name}**!"))
 
     @tag.command(name="transfer", usage="tag transfer <name> <@user>")
     @utils.guild_only()
@@ -147,13 +147,13 @@ class Tags(commands.Cog):
             tag = await utils.fetch_tag(ctx, name)
 
         except:
-            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag `{name}` doesn't appear to be in the database. Why not claim it by using `{ctx.bot.config.prefix}tag add {name} <content>`?"), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag **{name}** doesn't appear to be in the database. Why not claim it by using **{ctx.bot.config.prefix}tag add {name} <content>**?"), error=True)
 
         if tag.owner.id == new_owner.id:
             return await utils.embed(ctx, discord.Embed(title="Cannot Transfer", description=f"Sorry, you can't transfer a tag that you own to yourself."), error=True)
 
         if tag.owner.id != ctx.author.id:
-            return await utils.embed(ctx, discord.Embed(title="Unauthorized", description=f"Sorry, only {tag.owner.mention} can transfer the `{name}` tag."), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Unauthorized", description=f"Sorry, only {tag.owner.mention} can transfer the **{name}** tag."), error=True)
 
         with sqlite3.connect(ctx.bot.config.database) as db:
             db.cursor().execute("UPDATE Tags SET Owner_ID=? WHERE Name=?", (new_owner.id, name))
@@ -161,7 +161,7 @@ class Tags(commands.Cog):
 
         self.bot.cache.tags[name][0] = new_owner.id
 
-        await utils.embed(ctx, discord.Embed(title="Tag Transferred", description=f"You have successfully transferred ownership of the tag `{name}` to {new_owner.mention}. You can retrieve it by using `{ctx.bot.config.prefix}tag {name}`!"))
+        await utils.embed(ctx, discord.Embed(title="Tag Transferred", description=f"You have successfully transferred ownership of the tag **{name}** to {new_owner.mention}. You can retrieve it by using **{ctx.bot.config.prefix}tag {name}**!"))
 
     @tag.command(name="list", usage="tag list [@user]")
     @utils.guild_only()
@@ -201,13 +201,13 @@ class Tags(commands.Cog):
             tag = await utils.fetch_tag(ctx, name)
 
         except:
-            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag `{name}` doesn't appear to be in the database. Why not claim it by using `{ctx.bot.config.prefix}tag add {name} <content>`?"), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Tag Doesn't Exists", description=f"Sorry, the tag **{name}** doesn't appear to be in the database. Why not claim it by using **{ctx.bot.config.prefix}tag add {name} <content>**?"), error=True)
 
         if ctx.author.id == tag.owner.id:
             return await utils.embed(ctx, discord.Embed(title="Cannot Claim", description=f"Sorry, you can't claim your own tag."), error=True)
 
         if ctx.guild.get_member(tag.owner.id) is not None:
-            return await utils.embed(ctx, discord.Embed(title="Cannot Claim", description=f"Sorry, the `{name}` tag's owner ({tag.owner.mention}) is still in the server."), error=True)
+            return await utils.embed(ctx, discord.Embed(title="Cannot Claim", description=f"Sorry, the **{name}** tag's owner ({tag.owner.mention}) is still in the server."), error=True)
 
         with sqlite3.connect(ctx.bot.config.database) as db:
             db.cursor().execute("UPDATE Tags SET Owner_ID=? WHERE Name=?", (ctx.author.id, name))
@@ -215,7 +215,7 @@ class Tags(commands.Cog):
 
         self.bot.cache.tags[name][0] = ctx.author.id
 
-        await utils.embed(ctx, discord.Embed(title="Tag Claimed", description=f"You have successfully claimed ownership of the tag `{name}`. You can retrieve it by using `{ctx.bot.config.prefix}tag {name}`!"))
+        await utils.embed(ctx, discord.Embed(title="Tag Claimed", description=f"You have successfully claimed ownership of the tag **{name}**. You can retrieve it by using **{ctx.bot.config.prefix}tag {name}**!"))
 
     @commands.command(usage="tags [@user]")
     @utils.guild_only()
