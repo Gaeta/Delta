@@ -68,7 +68,7 @@ Here's a list of commands that you will find in Delta, you can also use `db.help
 ```
 
 - Tags
-```
+```python
 > tag
 - Sends the text of the provided tag.
 
@@ -95,6 +95,18 @@ Here's a list of commands that you will find in Delta, you can also use `db.help
 
 > tags
 - Shorthand for tag list
+```
+
+- Prefixes
+```python
+> prefix
+- Lists all of the prefixes that you or the user own.
+
+> prefix add
+- Adds a prefix to your prefix list.
+
+> prefix remove
+- Removes a prefix from your prefix list.
 ```
 
 - Moderator
