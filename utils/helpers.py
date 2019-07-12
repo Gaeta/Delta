@@ -357,7 +357,7 @@ def get_user_prefixes(bot, user):
 
 def ensure_prefix(bot, user, db):
     if db.cursor().execute("SELECT * FROM Prefixes WHERE Used_ID=?", (user.id,)).fetchone() is None:
-        value = [f"{bot.user.mention} ", bot.config.prefix]
+        value = [bot.config.prefix]
 
         db.cursor().execute("INSERT INTO Prefixes VALUES (?, ?)", (user.id, str(value)))
         db.commit()
